@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  db-api:
+    container_name: db-api
+    restart: always
+    image: kartoza/postgis:12.0
+    environment:
+      POSTGRES_DBNAME: db
+      POSTGRES_USER: username
+      POSTGRES_PASS: pgpassword
+    ports:
+      - "5433:5432"
+    networks:
+      - api-backend
+  api:
+    container_name: api
+    depends_on:
+      - db-api
+    build: .
+    command: bash -c "yarn && adonis serve --dev"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/app
+    networks:
+      - api-backend
+networks:
+  api-backend:
+    external:
+      name: api-backend
