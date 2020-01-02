@@ -4,6 +4,9 @@
 
 const Tool = use('App/Models/Tool');
 
+const Env = use('Env');
+const elasticsearch = use('elasticsearch');
+
 class ToolController {
   async store({ request, auth }) {
     const data = request.only(['title', 'link', 'description', 'tags']);
@@ -12,6 +15,12 @@ class ToolController {
     const tool = await Tool.create({ ...data, user_id: user.id });
 
     return tool;
+  }
+
+  async destroy({ params }) {
+    const tool = await Tool.findOrFail(params.id);
+
+    await tool.delete();
   }
 }
 

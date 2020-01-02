@@ -13,10 +13,27 @@ services:
       - "5433:5432"
     networks:
       - api-backend
+  elasticsearch:
+    container_name: db-elastic
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.1.1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - discovery.type=single-node
+    ports:
+      - "9300:9300"
+      - "9200:9200"
+    networks:
+      - api-backend
   api:
     container_name: api
     depends_on:
       - db-api
+      - elasticsearch
+    links:
+      - elasticsearch
     build: .
     command: bash -c "yarn && adonis serve --dev"
     ports:
@@ -25,6 +42,7 @@ services:
       - .:/usr/app
     networks:
       - api-backend
+
 networks:
   api-backend:
     external:
