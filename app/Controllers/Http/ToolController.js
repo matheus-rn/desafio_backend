@@ -24,6 +24,7 @@ class ToolController {
       id: tool.id,
       body: {
         id: tool.id,
+        user_id: user.id,
         title: tool.title,
         description: tool.description,
         tags: tool.tags.tags,
@@ -31,6 +32,30 @@ class ToolController {
     });
 
     return tool;
+  }
+
+  async index({ response, auth }) {
+    const user = await auth.getUser();
+    const paramsQuery = {
+      index: 'tools',
+      type: 'doc',
+      body: {
+        query: {
+          match: { user_id: user.id },
+        },
+      },
+    };
+
+    const tools = await esClient.search(paramsQuery);
+
+    const data = [];
+    if (tools.body.hits.hits) {
+      tools.body.hits.hits.forEach(tool => {
+        data.push(tool._source);
+      });
+    }
+
+    return data;
   }
 
   async destroy({ params }) {
