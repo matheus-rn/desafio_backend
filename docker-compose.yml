@@ -4,11 +4,11 @@ services:
   db-api:
     container_name: db-api
     restart: always
-    image: kartoza/postgis:12.0
+    image: postgres:12
     environment:
-      POSTGRES_DBNAME: db
+      POSTGRES_DB: db
       POSTGRES_USER: username
-      POSTGRES_PASS: pgpassword
+      POSTGRES_PASSWORD: pgpassword
     ports:
       - "5433:5432"
     networks:
@@ -22,6 +22,7 @@ services:
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - discovery.type=single-node
+      - cluster.name=es-docker-cluster
     ports:
       - "9300:9300"
       - "9200:9200"
@@ -47,3 +48,6 @@ networks:
   api-backend:
     external:
       name: api-backend
+
+volumes:
+  esdata:
