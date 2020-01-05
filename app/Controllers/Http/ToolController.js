@@ -25,6 +25,7 @@ class ToolController {
       body: {
         id: tool.id,
         user_id: user.id,
+        link: tool.link,
         title: tool.title,
         description: tool.description,
         tags: tool.tags.tags,
@@ -34,15 +35,38 @@ class ToolController {
     return tool;
   }
 
-  async index({ response, auth }) {
+  async index({ request, auth }) {
     const user = await auth.getUser();
+    const query = await request.get();
+
+    let queryMatch = {};
+
+    if (query.tag) {
+      queryMatch = {
+        match: {
+          tags: query.tag,
+        },
+      };
+    } else if (query.searchText) {
+      queryMatch = {
+        multi_match: {
+          query: query.searchText,
+          fields: ['title', 'description'],
+        },
+      };
+    } else {
+      queryMatch = {
+        match: {
+          user_id: user.id,
+        },
+      };
+    }
+
     const paramsQuery = {
       index: 'tools',
       type: 'doc',
       body: {
-        query: {
-          match: { user_id: user.id },
-        },
+        query: queryMatch,
       },
     };
 
